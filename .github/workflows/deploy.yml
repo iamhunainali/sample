@@ -1,0 +1,33 @@
+name: CI/CD to AWS
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Build Docker image
+        run: docker build -t ci-cd-demo .
+
+      - name: Push to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v1
+      - run: |
+          docker tag ci-cd-demo:latest ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/ci-cd-demo:latest
+          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/ci-cd-demo:latest
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ecs-task.json
+          service: ci-cd-service
+          cluster: ci-cd-cluster
+          wait-for-service-stability: true
