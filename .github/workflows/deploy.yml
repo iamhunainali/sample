@@ -30,9 +30,9 @@ jobs:
       # Step 4: Build, tag, and push Docker image
       - name: Build, tag, and push image to ECR
         run: |
-          REPO_NAME=ci-cd-demo
+          REPO_NAME=myreo
           IMAGE_TAG=latest
-          IMAGE_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/$REPO_NAME:$IMAGE_TAG
+          IMAGE_URI=737247133335.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/$REPO_NAME:$IMAGE_TAG
           
           echo "Building Docker image..."
           docker build -t $REPO_NAME .
