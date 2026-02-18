@@ -2,7 +2,7 @@ name: CI/CD to AWS
 
 on:
   push:
-    branches: [ "main" ]   # adjust if your branch is master
+    branches: [ "main" ]   # change to "master" if your repo uses master
 
 jobs:
   build-and-deploy:
@@ -13,7 +13,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      # Step 2: Configure AWS credentials (from GitHub Secrets)
+      # Step 2: Configure AWS credentials
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -30,9 +30,17 @@ jobs:
       # Step 4: Build, tag, and push Docker image
       - name: Build, tag, and push image to ECR
         run: |
-          IMAGE_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/ci-cd-demo:latest
-          docker build -t ci-cd-demo .
-          docker tag ci-cd-demo:latest $IMAGE_URI
+          REPO_NAME=ci-cd-demo
+          IMAGE_TAG=latest
+          IMAGE_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/$REPO_NAME:$IMAGE_TAG
+          
+          echo "Building Docker image..."
+          docker build -t $REPO_NAME .
+          
+          echo "Tagging image as $IMAGE_URI"
+          docker tag $REPO_NAME:$IMAGE_TAG $IMAGE_URI
+          
+          echo "Pushing image to ECR"
           docker push $IMAGE_URI
 
       # Step 5: Deploy to ECS
